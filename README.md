@@ -1,2 +1,84 @@
-# ai-log-analyzer-agent
-Local AI agent-style Streamlit app for CI/CD log analysis and root cause recommendation
+# Local AI Agent for CI/CD Log Analysis and Root Cause Recommendation
+
+A local Streamlit-based troubleshooting assistant for analyzing CI/CD-style log files.  
+The application detects important error lines, classifies the failure type, explains the probable root cause, suggests fixes, and generates a downloadable troubleshooting report.
+
+## Project Purpose
+
+This project was created as a portfolio project to demonstrate the connection between:
+
+- CI/CD pipeline troubleshooting
+- Python-based log parsing
+- Rule-based error classification
+- Root cause recommendation
+- Streamlit application development
+- Modular project structure
+
+The project uses realistic sample CI/CD logs because no real company pipeline logs are included.
+
+## Important Note
+
+This is a local rule-based AI-agent-style tool.  
+It does not use real company logs, paid cloud services, or external AI APIs in Version 1.
+
+The first version focuses on a simple, working, and explainable implementation.
+
+## Features
+
+- Upload `.log` or `.txt` files
+- Use built-in sample CI/CD log files
+- Extract important error lines containing keywords such as:
+  - ERROR
+  - FAILED
+  - Exception
+  - Traceback
+  - Permission denied
+  - ModuleNotFoundError
+  - SyntaxError
+  - Timeout
+  - Build failed
+  - Deployment failed
+- Classify failures into categories:
+  - Dependency Error
+  - Test Failure
+  - Docker Build Error
+  - YAML Syntax Error
+  - Permission Error
+  - Timeout Error
+  - Deployment Error
+  - Unknown Error
+- Generate:
+  - probable root cause
+  - suggested fix
+  - confidence level
+  - final troubleshooting summary
+- Download report as:
+  - `.txt`
+  - `.csv`
+
+## Project Structure
+
+```text
+ai-log-analyzer-agent/
+│
+├── app.py
+├── requirements.txt
+├── README.md
+│
+├── sample_logs/
+│   ├── python_dependency_error.log
+│   ├── test_failure.log
+│   ├── docker_build_error.log
+│   ├── yaml_syntax_error.log
+│   ├── permission_error.log
+│   └── deployment_timeout.log
+│
+├── src/
+│   ├── log_parser.py
+│   ├── error_classifier.py
+│   ├── report_generator.py
+│   └── sample_data.py
+│
+└── .github/
+    └── workflows/
+        └── test.yml
