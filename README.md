@@ -82,3 +82,12 @@ ai-log-analyzer-agent/
 └── .github/
     └── workflows/
         └── test.yml
+
+```
+## Screenshots
+
+### App Home
+![App Home](screenshots/app_home.png)
+
+### Analysis Result
+![Analysis Result](screenshots/analysis_result.png)
