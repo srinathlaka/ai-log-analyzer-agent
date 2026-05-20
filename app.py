@@ -138,6 +138,18 @@ st.write(
     "identify probable root cause, and generate a troubleshooting report."
 )
 
+with st.expander("About this tool"):
+    st.write("""
+    This application is a local CI/CD log analysis assistant. It uses rule-based parsing
+    and classification to detect common pipeline failure patterns such as dependency errors,
+    test failures, Docker build errors, YAML syntax issues, permission problems, timeouts,
+    and deployment failures.
+
+    The tool does not use real company logs or external cloud services. It is designed as
+    a local portfolio project to demonstrate Python, Streamlit, log parsing, modular coding,
+    and troubleshooting report generation.
+    """)
+
 # Initialize analysis history
 if "analysis_history" not in st.session_state:
     st.session_state.analysis_history = []
