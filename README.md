@@ -21,7 +21,8 @@ The project uses realistic sample CI/CD logs because no real company pipeline lo
 This is a local rule-based AI-agent-style tool.  
 It does not use real company logs, paid cloud services, or external AI APIs in Version 1.
 
-The first version focuses on a simple, working, and explainable implementation.
+Version 1 started with rule-based single-category classification.  
+The current version also supports multi-category detection with primary and secondary error categories.
 
 ## Features
 
@@ -55,6 +56,8 @@ The first version focuses on a simple, working, and explainable implementation.
 - Download report as:
   - `.txt`
   - `.csv`
+  - Detect multiple related failure categories from the same log
+  - Identify one primary/root category and show secondary categories
 
 ## Project Structure
 
