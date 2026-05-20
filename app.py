@@ -89,7 +89,11 @@ def convert_report_to_dataframe(report):
     data = {
         "File Name": [report["file_name"]],
         "Primary Category": [report["primary_category"]],
-        "Secondary Categories": [", ".join(report["secondary_categories"]) if report["secondary_categories"] else "None"],
+        "Secondary Categories": [
+            ", ".join(report["secondary_categories"])
+            if report["secondary_categories"]
+            else "None"
+        ],
         "All Detected Categories": [", ".join(report["all_detected_categories"])],
         "Confidence Level": [report["confidence_level"]],
         "Severity Level": [report["severity_level"]],
@@ -128,10 +132,15 @@ st.set_page_config(
 )
 
 st.title("Local AI Agent for CI/CD Log Analysis")
+
 st.write(
-    "Upload or select a CI/CD-style log file to detect errors, classify the failure type, "
+    "Upload, paste, or select a CI/CD-style log file to detect errors, classify the failure type, "
     "identify probable root cause, and generate a troubleshooting report."
 )
+
+# Initialize analysis history
+if "analysis_history" not in st.session_state:
+    st.session_state.analysis_history = []
 
 st.sidebar.header("Input Options")
 
@@ -153,7 +162,6 @@ if input_option == "Use built-in sample log":
 
     file_path = sample_logs[selected_sample]
     file_name = file_path
-
     log_text = read_log_file(file_path)
 
 elif input_option == "Upload log file":
@@ -164,7 +172,15 @@ elif input_option == "Upload log file":
 
     if uploaded_file is not None:
         file_name = uploaded_file.name
-        log_text = uploaded_file.read().decode("utf-8")
+
+        try:
+            log_text = uploaded_file.read().decode("utf-8")
+        except UnicodeDecodeError:
+            st.error(
+                "Could not read the uploaded file. "
+                "Please upload a UTF-8 encoded .log or .txt file."
+            )
+            log_text = None
 
 else:
     file_name = "pasted_log_text.txt"
@@ -172,16 +188,41 @@ else:
     log_text = st.text_area(
         "Paste your CI/CD log text here",
         height=250,
-        placeholder="Paste error logs here, for example: ERROR: ModuleNotFoundError: No module named 'numpy'"
+        placeholder=(
+            "Paste error logs here, for example:\n"
+            "ERROR: ModuleNotFoundError: No module named 'numpy'\n"
+            "FAILED tests/test_app.py::test_login\n"
+            "Deployment failed"
+        )
     )
 
 
 if log_text:
     st.subheader("Log Preview")
-    st.text_area("Raw Log Content", log_text, height=220)
+
+    st.text_area(
+        "Raw Log Content",
+        log_text,
+        height=220
+    )
 
     if st.button("Analyze Log"):
         report = analyze_log(file_name, log_text)
+
+        history_item = {
+            "File Name": report["file_name"],
+            "Primary Category": report["primary_category"],
+            "Secondary Categories": (
+                ", ".join(report["secondary_categories"])
+                if report["secondary_categories"]
+                else "None"
+            ),
+            "Severity": report["severity_level"],
+            "Confidence": report["confidence_level"],
+            "Detected Lines": len(report["detected_error_lines"]),
+        }
+
+        st.session_state.analysis_history.append(history_item)
 
         st.subheader("Analysis Result")
 
@@ -204,11 +245,17 @@ if log_text:
         st.write("**Primary Category:**", report["primary_category"])
 
         if report["secondary_categories"]:
-            st.write("**Secondary Categories:**", ", ".join(report["secondary_categories"]))
+            st.write(
+                "**Secondary Categories:**",
+                ", ".join(report["secondary_categories"])
+            )
         else:
             st.write("**Secondary Categories:** None")
 
-        st.write("**All Detected Categories:**", ", ".join(report["all_detected_categories"]))
+        st.write(
+            "**All Detected Categories:**",
+            ", ".join(report["all_detected_categories"])
+        )
 
         st.subheader("Detected Error Lines")
 
@@ -248,5 +295,19 @@ if log_text:
             mime="text/csv"
         )
 
+    if st.session_state.analysis_history:
+        st.subheader("Analysis History")
+
+        history_df = pd.DataFrame(st.session_state.analysis_history)
+
+        st.dataframe(
+            history_df,
+            use_container_width=True
+        )
+
+        if st.button("Clear History"):
+            st.session_state.analysis_history = []
+            st.rerun()
+
 else:
-    st.info("Please select a sample log or upload a log file to start analysis.")
+    st.info("Please select a sample log, upload a log file, or paste log text to start analysis.")
