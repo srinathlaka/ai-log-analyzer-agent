@@ -133,7 +133,7 @@ st.sidebar.header("Input Options")
 
 input_option = st.sidebar.radio(
     "Choose log input method",
-    ["Use built-in sample log", "Upload log file"]
+    ["Use built-in sample log", "Upload log file", "Paste log text"]
 )
 
 log_text = None
@@ -152,7 +152,7 @@ if input_option == "Use built-in sample log":
 
     log_text = read_log_file(file_path)
 
-else:
+elif input_option == "Upload log file":
     uploaded_file = st.sidebar.file_uploader(
         "Upload a .log or .txt file",
         type=["log", "txt"]
@@ -161,6 +161,15 @@ else:
     if uploaded_file is not None:
         file_name = uploaded_file.name
         log_text = uploaded_file.read().decode("utf-8")
+
+else:
+    file_name = "pasted_log_text.txt"
+
+    log_text = st.text_area(
+        "Paste your CI/CD log text here",
+        height=250,
+        placeholder="Paste error logs here, for example: ERROR: ModuleNotFoundError: No module named 'numpy'"
+    )
 
 
 if log_text:
