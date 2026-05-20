@@ -11,7 +11,7 @@ def get_root_cause_and_fix(category):
     Generate probable root cause and suggested fix based on failure category.
 
     Parameters:
-        category (str): Failure category detected by the classifier.
+        category (str): Primary failure category detected by the classifier.
 
     Returns:
         dict: Root cause and suggested fix.
@@ -73,25 +73,43 @@ def generate_report(file_name, error_lines, classification):
     Parameters:
         file_name (str): Name of the analyzed log file.
         error_lines (list): Extracted important error lines.
-        classification (dict): Category and confidence result.
+        classification (dict): Classification result.
 
     Returns:
         dict: Complete troubleshooting report.
     """
 
-    category = classification["category"]
+    primary_category = classification["primary_category"]
+    secondary_categories = classification["secondary_categories"]
+    all_detected_categories = classification["all_detected_categories"]
     confidence = classification["confidence"]
 
-    explanation = get_root_cause_and_fix(category)
+    explanation = get_root_cause_and_fix(primary_category)
+
+    if secondary_categories:
+        secondary_text = ", ".join(secondary_categories)
+        final_summary = (
+            f"The log analysis detected {primary_category} as the primary failure category. "
+            f"Additional related categories were also found: {secondary_text}. "
+            f"The confidence level is {confidence}. Review the suggested fix and verify the related pipeline step."
+        )
+    else:
+        final_summary = (
+            f"The log analysis detected {primary_category} as the primary failure category. "
+            f"The confidence level is {confidence}. Review the suggested fix and verify the related pipeline step."
+        )
 
     report = {
         "file_name": file_name,
         "detected_error_lines": error_lines,
-        "failure_category": category,
+        "failure_category": primary_category,
+        "primary_category": primary_category,
+        "secondary_categories": secondary_categories,
+        "all_detected_categories": all_detected_categories,
         "probable_root_cause": explanation["root_cause"],
         "suggested_fix": explanation["suggested_fix"],
         "confidence_level": confidence,
-        "final_summary": f"The log analysis detected a {category}. The confidence level is {confidence}. Review the suggested fix and verify the related pipeline step."
+        "final_summary": final_summary
     }
 
     return report

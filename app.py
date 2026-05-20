@@ -44,8 +44,14 @@ CI/CD Log Troubleshooting Report
 Log File Name:
 {report["file_name"]}
 
-Failure Category:
-{report["failure_category"]}
+Primary Failure Category:
+{report["primary_category"]}
+
+Secondary Categories:
+{", ".join(report["secondary_categories"]) if report["secondary_categories"] else "None"}
+
+All Detected Categories:
+{", ".join(report["all_detected_categories"])}
 
 Confidence Level:
 {report["confidence_level"]}
@@ -79,7 +85,9 @@ def convert_report_to_dataframe(report):
 
     data = {
         "File Name": [report["file_name"]],
-        "Failure Category": [report["failure_category"]],
+        "Primary Category": [report["primary_category"]],
+        "Secondary Categories": [", ".join(report["secondary_categories"]) if report["secondary_categories"] else "None"],
+        "All Detected Categories": [", ".join(report["all_detected_categories"])],
         "Confidence Level": [report["confidence_level"]],
         "Detected Error Lines": [" | ".join(report["detected_error_lines"])],
         "Probable Root Cause": [report["probable_root_cause"]],
@@ -167,13 +175,24 @@ if log_text:
         col1, col2, col3 = st.columns(3)
 
         with col1:
-            st.metric("Failure Category", report["failure_category"])
+            st.metric("Primary Category", report["primary_category"])
 
         with col2:
             st.metric("Confidence", report["confidence_level"])
 
         with col3:
             st.metric("Detected Lines", len(report["detected_error_lines"]))
+
+        st.subheader("Detected Categories")
+
+        st.write("**Primary Category:**", report["primary_category"])
+
+        if report["secondary_categories"]:
+            st.write("**Secondary Categories:**", ", ".join(report["secondary_categories"]))
+        else:
+            st.write("**Secondary Categories:** None")
+
+        st.write("**All Detected Categories:**", ", ".join(report["all_detected_categories"]))
 
         st.subheader("Detected Error Lines")
 

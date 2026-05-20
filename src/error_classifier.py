@@ -1,12 +1,14 @@
 # src/error_classifier.py
 
 """
-This file classifies CI/CD log errors into simple failure categories.
+This file classifies CI/CD log errors into failure categories.
 
 Main purpose:
 - Take extracted error lines
 - Check for known error patterns
-- Return a failure category and confidence level
+- Detect multiple possible categories
+- Select one primary failure category
+- Return primary category, secondary categories, and confidence level
 """
 
 
@@ -18,56 +20,90 @@ def classify_error(error_lines):
         error_lines (list): List of important error lines from the log file.
 
     Returns:
-        dict: Classification result with category and confidence.
+        dict: Classification result with primary category,
+              secondary categories, all detected categories,
+              and confidence level.
     """
 
-    # Combine all error lines into one text block for easier searching
+    # Combine all error lines into one lowercase text block
     error_text = " ".join(error_lines).lower()
 
+    detected_categories = []
+
+    # Check dependency-related errors
     if "modulenotfounderror" in error_text or "no module named" in error_text:
-        return {
-            "category": "Dependency Error",
-            "confidence": "High"
-        }
+        detected_categories.append("Dependency Error")
 
-    elif "failed" in error_text and ("test" in error_text or "assert" in error_text):
-        return {
-            "category": "Test Failure",
-            "confidence": "High"
-        }
+    # Check test-related errors
+    if "failed" in error_text and ("test" in error_text or "assert" in error_text):
+        detected_categories.append("Test Failure")
 
-    elif "docker" in error_text or "dockerfile" in error_text:
-        return {
-            "category": "Docker Build Error",
-            "confidence": "Medium"
-        }
+    # Check Docker-related errors
+    if "docker" in error_text or "dockerfile" in error_text:
+        detected_categories.append("Docker Build Error")
 
-    elif "yaml" in error_text or "syntaxerror" in error_text:
-        return {
-            "category": "YAML Syntax Error",
-            "confidence": "Medium"
-        }
+    # Check YAML-related errors
+    if "yaml" in error_text or "syntaxerror" in error_text:
+        detected_categories.append("YAML Syntax Error")
 
-    elif "permission denied" in error_text or "access denied" in error_text:
-        return {
-            "category": "Permission Error",
-            "confidence": "High"
-        }
+    # Check permission-related errors
+    if "permission denied" in error_text or "access denied" in error_text:
+        detected_categories.append("Permission Error")
 
-    elif "timeout" in error_text or "timed out" in error_text:
-        return {
-            "category": "Timeout Error",
-            "confidence": "High"
-        }
+    # Check timeout-related errors
+    if "timeout" in error_text or "timed out" in error_text:
+        detected_categories.append("Timeout Error")
 
-    elif "deployment failed" in error_text:
-        return {
-            "category": "Deployment Error",
-            "confidence": "Medium"
-        }
+    # Check deployment-related errors
+    if "deployment failed" in error_text:
+        detected_categories.append("Deployment Error")
 
-    else:
+    # If nothing matched, return Unknown Error
+    if not detected_categories:
         return {
             "category": "Unknown Error",
+            "primary_category": "Unknown Error",
+            "secondary_categories": [],
+            "all_detected_categories": ["Unknown Error"],
             "confidence": "Low"
         }
+
+    # Priority order decides the primary/root category
+    priority_order = [
+        "Dependency Error",
+        "YAML Syntax Error",
+        "Docker Build Error",
+        "Permission Error",
+        "Timeout Error",
+        "Test Failure",
+        "Deployment Error",
+    ]
+
+    primary_category = "Unknown Error"
+
+    for category in priority_order:
+        if category in detected_categories:
+            primary_category = category
+            break
+
+    secondary_categories = []
+
+    for category in detected_categories:
+        if category != primary_category:
+            secondary_categories.append(category)
+
+    # Confidence logic
+    if len(detected_categories) == 1:
+        confidence = "High"
+    elif len(detected_categories) == 2:
+        confidence = "Medium"
+    else:
+        confidence = "Medium"
+
+    return {
+        "category": primary_category,
+        "primary_category": primary_category,
+        "secondary_categories": secondary_categories,
+        "all_detected_categories": detected_categories,
+        "confidence": confidence
+    }
