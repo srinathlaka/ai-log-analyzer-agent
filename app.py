@@ -7,6 +7,7 @@ from src.log_parser import extract_error_lines
 from src.error_classifier import classify_error
 from src.report_generator import generate_report
 from src.sample_data import get_sample_logs
+from src.ai_recommender import generate_ai_recommendation
 
 
 def read_log_file(file_path):
@@ -138,21 +139,16 @@ st.write(
     "identify probable root cause, and generate a troubleshooting report."
 )
 
-with st.expander("About this tool"):
-    st.write("""
-    This application is a local CI/CD log analysis assistant. It uses rule-based parsing
-    and classification to detect common pipeline failure patterns such as dependency errors,
-    test failures, Docker build errors, YAML syntax issues, permission problems, timeouts,
-    and deployment failures.
-
-    The tool does not use real company logs or external cloud services. It is designed as
-    a local portfolio project to demonstrate Python, Streamlit, log parsing, modular coding,
-    and troubleshooting report generation.
-    """)
-
-# Initialize analysis history
+# Initialize session state
 if "analysis_history" not in st.session_state:
     st.session_state.analysis_history = []
+
+if "latest_report" not in st.session_state:
+    st.session_state.latest_report = None
+
+if "latest_ai_recommendation" not in st.session_state:
+    st.session_state.latest_ai_recommendation = None
+
 
 st.sidebar.header("Input Options")
 
@@ -221,6 +217,10 @@ if log_text:
     if st.button("Analyze Log"):
         report = analyze_log(file_name, log_text)
 
+        # Store latest report for AI recommendation
+        st.session_state.latest_report = report
+        st.session_state.latest_ai_recommendation = None
+
         history_item = {
             "File Name": report["file_name"],
             "Primary Category": report["primary_category"],
@@ -235,6 +235,9 @@ if log_text:
         }
 
         st.session_state.analysis_history.append(history_item)
+
+    if st.session_state.latest_report is not None:
+        report = st.session_state.latest_report
 
         st.subheader("Analysis Result")
 
@@ -277,14 +280,30 @@ if log_text:
         else:
             st.info("No important error lines were detected.")
 
-        st.subheader("Probable Root Cause")
+        st.subheader("Rule-Based Root Cause")
         st.write(report["probable_root_cause"])
 
-        st.subheader("Suggested Fix")
+        st.subheader("Rule-Based Suggested Fix")
         st.write(report["suggested_fix"])
 
         st.subheader("Final Summary")
         st.success(report["final_summary"])
+
+        st.subheader("Local AI Recommendation")
+
+        st.write(
+            "Generate an AI-assisted explanation using the local Ollama model. "
+            "Make sure Ollama is running and the selected model is installed."
+        )
+
+        if st.button("Generate Local AI Recommendation"):
+            with st.spinner("Generating recommendation using local Ollama model..."):
+                ai_recommendation = generate_ai_recommendation(report)
+
+            st.session_state.latest_ai_recommendation = ai_recommendation
+
+        if st.session_state.latest_ai_recommendation:
+            st.markdown(st.session_state.latest_ai_recommendation)
 
         report_text = convert_report_to_text(report)
         report_df = convert_report_to_dataframe(report)
@@ -319,7 +338,11 @@ if log_text:
 
         if st.button("Clear History"):
             st.session_state.analysis_history = []
+            st.session_state.latest_report = None
+            st.session_state.latest_ai_recommendation = None
             st.rerun()
 
 else:
-    st.info("Please select a sample log, upload a log file, or paste log text to start analysis.")
+    st.info(
+        "Please select a sample log, upload a log file, or paste log text to start analysis."
+    )
