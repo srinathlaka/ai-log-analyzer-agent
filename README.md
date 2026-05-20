@@ -58,6 +58,7 @@ The current version also supports multi-category detection with primary and seco
   - `.csv`
   - Detect multiple related failure categories from the same log
   - Identify one primary/root category and show secondary categories
+  - Assign severity levels such as High, Medium, or Low based on the primary failure category
 
 ## Project Structure
 
