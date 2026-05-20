@@ -60,6 +60,20 @@ The current version also supports multi-category detection with primary and seco
   - Identify one primary/root category and show secondary categories
   - Assign severity levels such as High, Medium, or Low based on the primary failure category
   - Maintain an analysis history table during the current Streamlit session
+  - Generate local AI-assisted troubleshooting recommendations using Ollama
+
+## Technologies Used
+
+- **Programming Language:** Python 3.10
+- **Web App Framework:** Streamlit
+- **Data Handling:** Pandas
+- **Local AI Integration:** Ollama with qwen2.5:1.5b
+- **API Communication:** Requests
+- **Log Analysis:** Rule-based parsing and multi-category classification
+- **Reporting:** TXT and CSV export
+- **Version Control:** Git and GitHub
+- **CI Check:** GitHub Actions
+- **Environment Management:** Conda
 
 ## Project Structure
 
