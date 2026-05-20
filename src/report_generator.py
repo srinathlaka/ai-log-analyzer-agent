@@ -64,7 +64,37 @@ def get_root_cause_and_fix(category):
             "root_cause": "The exact root cause could not be identified from the known error patterns.",
             "suggested_fix": "Review the full log manually and search for detailed error messages near the failed pipeline step."
         }
+    
+def get_severity_level(category):
+    """
+    Assign severity level based on the primary failure category.
 
+    Parameters:
+        category (str): Primary failure category.
+
+    Returns:
+        str: Severity level.
+    """
+
+    high_severity_categories = [
+        "Docker Build Error",
+        "YAML Syntax Error",
+        "Permission Error",
+        "Timeout Error",
+        "Deployment Error",
+    ]
+
+    medium_severity_categories = [
+        "Dependency Error",
+        "Test Failure",
+    ]
+
+    if category in high_severity_categories:
+        return "High"
+    elif category in medium_severity_categories:
+        return "Medium"
+    else:
+        return "Low"
 
 def generate_report(file_name, error_lines, classification):
     """
@@ -83,6 +113,7 @@ def generate_report(file_name, error_lines, classification):
     secondary_categories = classification["secondary_categories"]
     all_detected_categories = classification["all_detected_categories"]
     confidence = classification["confidence"]
+    severity_level = get_severity_level(primary_category)
 
     explanation = get_root_cause_and_fix(primary_category)
 
@@ -109,6 +140,7 @@ def generate_report(file_name, error_lines, classification):
         "probable_root_cause": explanation["root_cause"],
         "suggested_fix": explanation["suggested_fix"],
         "confidence_level": confidence,
+        "severity_level": severity_level,
         "final_summary": final_summary
     }
 

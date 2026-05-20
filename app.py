@@ -56,6 +56,9 @@ All Detected Categories:
 Confidence Level:
 {report["confidence_level"]}
 
+Severity Level:
+{report["severity_level"]}
+
 Detected Error Lines:
 {error_lines_text}
 
@@ -89,6 +92,7 @@ def convert_report_to_dataframe(report):
         "Secondary Categories": [", ".join(report["secondary_categories"]) if report["secondary_categories"] else "None"],
         "All Detected Categories": [", ".join(report["all_detected_categories"])],
         "Confidence Level": [report["confidence_level"]],
+        "Severity Level": [report["severity_level"]],
         "Detected Error Lines": [" | ".join(report["detected_error_lines"])],
         "Probable Root Cause": [report["probable_root_cause"]],
         "Suggested Fix": [report["suggested_fix"]],
@@ -181,7 +185,7 @@ if log_text:
 
         st.subheader("Analysis Result")
 
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3, col4 = st.columns(4)
 
         with col1:
             st.metric("Primary Category", report["primary_category"])
@@ -190,6 +194,9 @@ if log_text:
             st.metric("Confidence", report["confidence_level"])
 
         with col3:
+            st.metric("Severity", report["severity_level"])
+
+        with col4:
             st.metric("Detected Lines", len(report["detected_error_lines"]))
 
         st.subheader("Detected Categories")
