@@ -7,7 +7,7 @@ from src.log_parser import extract_error_lines
 from src.error_classifier import classify_error
 from src.report_generator import generate_report
 from src.sample_data import get_sample_logs
-from src.ai_recommender import generate_ai_recommendation
+from src.ai_recommender import generate_ai_recommendation, check_ollama_status
 
 
 def read_log_file(file_path):
@@ -150,6 +150,31 @@ if "latest_ai_recommendation" not in st.session_state:
     st.session_state.latest_ai_recommendation = None
 
 
+# Sidebar: Local AI status
+st.sidebar.header("Local AI Status")
+
+ollama_status = check_ollama_status()
+
+ai_ready = (
+    ollama_status["ollama_running"]
+    and ollama_status["model_available"]
+)
+
+if ai_ready:
+    st.sidebar.success("Local AI: Available")
+    st.sidebar.write("Model: qwen2.5:1.5b")
+
+elif ollama_status["ollama_running"] and not ollama_status["model_available"]:
+    st.sidebar.warning("Ollama is running, but the required model is missing.")
+    st.sidebar.write("Run this command:")
+    st.sidebar.code("ollama pull qwen2.5:1.5b")
+
+else:
+    st.sidebar.error("Local AI: Not running")
+    st.sidebar.write("Start Ollama and try again.")
+
+
+# Sidebar: Input options
 st.sidebar.header("Input Options")
 
 input_option = st.sidebar.radio(
@@ -293,14 +318,19 @@ if log_text:
 
         st.write(
             "Generate an AI-assisted explanation using the local Ollama model. "
-            "Make sure Ollama is running and the selected model is installed."
+            "The button is enabled only when Ollama is running and the required model is available."
         )
 
-        if st.button("Generate Local AI Recommendation"):
+        if st.button("Generate Local AI Recommendation", disabled=not ai_ready):
             with st.spinner("Generating recommendation using local Ollama model..."):
                 ai_recommendation = generate_ai_recommendation(report)
 
             st.session_state.latest_ai_recommendation = ai_recommendation
+
+        if not ai_ready:
+            st.warning(
+                "Local AI recommendation is disabled because Ollama or the required model is not available."
+            )
 
         if st.session_state.latest_ai_recommendation:
             st.markdown(st.session_state.latest_ai_recommendation)

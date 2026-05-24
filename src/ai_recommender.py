@@ -128,3 +128,133 @@ def generate_ai_recommendation(report, model_name=DEFAULT_MODEL):
 
     except requests.exceptions.RequestException as error:
         return f"Local AI recommendation failed: {error}"
+    
+
+def check_ollama_status(model_name=DEFAULT_MODEL):
+    """
+    Check whether Ollama is running and whether the selected model is available.
+
+    Parameters:
+        model_name (str): Ollama model name.
+
+    Returns:
+        dict: Status information about Ollama and the model.
+    """
+
+    try:
+        response = requests.get(
+            "http://localhost:11434/api/tags",
+            timeout=5
+        )
+
+        response.raise_for_status()
+
+        result = response.json()
+        models = result.get("models", [])
+
+        available_models = [
+            model.get("name", "")
+            for model in models
+        ]
+
+        model_available = model_name in available_models
+
+        return {
+            "ollama_running": True,
+            "model_available": model_available,
+            "available_models": available_models,
+            "message": (
+                f"Ollama is running and model '{model_name}' is available."
+                if model_available
+                else f"Ollama is running, but model '{model_name}' is not available."
+            )
+        }
+
+    except requests.exceptions.ConnectionError:
+        return {
+            "ollama_running": False,
+            "model_available": False,
+            "available_models": [],
+            "message": "Ollama is not running. Please start Ollama and try again."
+        }
+
+    except requests.exceptions.Timeout:
+        return {
+            "ollama_running": False,
+            "model_available": False,
+            "available_models": [],
+            "message": "Ollama status check timed out."
+        }
+
+    except requests.exceptions.RequestException as error:
+        return {
+            "ollama_running": False,
+            "model_available": False,
+            "available_models": [],
+            "message": f"Ollama status check failed: {error}"
+        }
+    
+
+def check_ollama_status(model_name=DEFAULT_MODEL):
+    """
+    Check whether Ollama is running and whether the selected model is available.
+
+    Parameters:
+        model_name (str): Ollama model name.
+
+    Returns:
+        dict: Status information about Ollama and the model.
+    """
+
+    try:
+        response = requests.get(
+            "http://localhost:11434/api/tags",
+            timeout=5
+        )
+
+        response.raise_for_status()
+
+        result = response.json()
+        models = result.get("models", [])
+
+        available_models = [
+            model.get("name", "")
+            for model in models
+        ]
+
+        model_available = model_name in available_models
+
+        return {
+            "ollama_running": True,
+            "model_available": model_available,
+            "available_models": available_models,
+            "message": (
+                f"Ollama is running and model '{model_name}' is available."
+                if model_available
+                else f"Ollama is running, but model '{model_name}' is not available."
+            )
+        }
+
+    except requests.exceptions.ConnectionError:
+        return {
+            "ollama_running": False,
+            "model_available": False,
+            "available_models": [],
+            "message": "Ollama is not running. Please start Ollama and try again."
+        }
+
+    except requests.exceptions.Timeout:
+        return {
+            "ollama_running": False,
+            "model_available": False,
+            "available_models": [],
+            "message": "Ollama status check timed out."
+        }
+
+    except requests.exceptions.RequestException as error:
+        return {
+            "ollama_running": False,
+            "model_available": False,
+            "available_models": [],
+            "message": f"Ollama status check failed: {error}"
+        }
