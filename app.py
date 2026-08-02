@@ -7,7 +7,7 @@ from src.log_parser import extract_error_lines
 from src.error_classifier import classify_error
 from src.report_generator import generate_report
 from src.sample_data import get_sample_logs
-from src.ai_recommender import generate_ai_recommendation, check_ollama_status
+from src.ai_recommender import generate_ai_recommendation, check_ollama_status, DEFAULT_MODEL
 from src.agent_engine import run_context_agent
 
 
@@ -201,21 +201,24 @@ st.sidebar.header("Local AI Status")
 
 ollama_status = check_ollama_status()
 
-ai_ready = (
-    ollama_status["ollama_running"]
-    and ollama_status["model_available"]
-)
-
-if ai_ready:
+if ollama_status["ollama_running"] and ollama_status["available_models"]:
+    selected_model = st.sidebar.selectbox(
+        "Model",
+        ollama_status["available_models"]
+    )
+    ai_ready = True
     st.sidebar.success("Local AI: Available")
-    st.sidebar.write("Model: qwen2.5:1.5b")
 
-elif ollama_status["ollama_running"] and not ollama_status["model_available"]:
-    st.sidebar.warning("Ollama is running, but the required model is missing.")
+elif ollama_status["ollama_running"]:
+    selected_model = DEFAULT_MODEL
+    ai_ready = False
+    st.sidebar.warning("Ollama is running, but no models are installed.")
     st.sidebar.write("Run this command:")
-    st.sidebar.code("ollama pull qwen2.5:1.5b")
+    st.sidebar.code(f"ollama pull {selected_model}")
 
 else:
+    selected_model = DEFAULT_MODEL
+    ai_ready = False
     st.sidebar.error("Local AI: Not running")
     st.sidebar.write("Start Ollama and try again.")
 
@@ -418,7 +421,7 @@ if log_text:
 
         if st.button("Generate Local AI Recommendation", disabled=not ai_ready):
             with st.spinner("Generating recommendation using local Ollama model..."):
-                ai_recommendation = generate_ai_recommendation(report)
+                ai_recommendation = generate_ai_recommendation(report, model_name=selected_model)
 
             st.session_state.latest_ai_recommendation = ai_recommendation
 
