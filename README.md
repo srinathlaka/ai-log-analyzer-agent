@@ -96,3 +96,21 @@ ai-log-analyzer-agent/
 
 ### Analysis Result
 ![Analysis Result](screenshots/analysis_result.png)
+
+
+## Version 3: Context-Aware Troubleshooting Agent
+
+The tool can optionally inspect related project context files such as:
+
+- requirements.txt
+- Dockerfile
+- GitHub Actions workflow YAML
+
+Based on the detected primary failure category, the local agent chooses which context file to inspect and generates evidence-based findings and recommendations.
+
+Example:
+
+If the log contains:
+
+```text
+ModuleNotFoundError: No module named 'numpy'
