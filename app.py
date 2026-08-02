@@ -284,7 +284,6 @@ requirements_file = st.sidebar.file_uploader(
 
 dockerfile_upload = st.sidebar.file_uploader(
     "Upload Dockerfile",
-    type=["Dockerfile", "txt"],
     key="dockerfile_upload"
 )
 
